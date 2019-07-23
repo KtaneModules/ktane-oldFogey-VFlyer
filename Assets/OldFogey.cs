@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using KModkit;
 using rnd = UnityEngine.Random;
+using System.Text.RegularExpressions;
 
 public class OldFogey : MonoBehaviour 
 {
@@ -349,4 +350,99 @@ public class OldFogey : MonoBehaviour
 		if(restore)
 			submit = false;
 	}
+
+    //twitch plays
+    private bool cmdIsValid(string param)
+    {
+        string[] parameters = param.Split(' ', ',');
+        for (int i = 1; i < parameters.Length; i++)
+        {
+            if (!parameters[i].EqualsIgnoreCase("1") && !parameters[i].EqualsIgnoreCase("2") && !parameters[i].EqualsIgnoreCase("3") && !parameters[i].EqualsIgnoreCase("4") && !parameters[i].EqualsIgnoreCase("5") && !parameters[i].EqualsIgnoreCase("6") && !parameters[i].EqualsIgnoreCase("7") && !parameters[i].EqualsIgnoreCase("8") && !parameters[i].EqualsIgnoreCase("9") && !parameters[i].EqualsIgnoreCase("10"))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    #pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"!{0} press <button> [Presses the specified button] | !{0} press <button <button> [Example of button press chaining] | !{0} submit [Presses the submit button] | !{0} reset [Resets all inputs] | Valid buttons for the press command are 1-10, representing the buttons in reading order";
+    #pragma warning restore 414
+
+    IEnumerator ProcessTwitchCommand(string command)
+    {
+        if (Regex.IsMatch(command, @"^\s*reset\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            Debug.LogFormat("[Old Fogey #{0}] Reset of inputs triggered! (TP)", moduleId);
+            presses = new List<int>();
+            submit = false;
+            display.text = "";
+            screen.GetComponentInChildren<Renderer>().material = screenColors[0];
+            StopCoroutine(colorFlash);
+            yield break;
+        }
+        if (Regex.IsMatch(command, @"^\s*submit\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            submitBtn.OnInteract();
+            yield break;
+        }
+        string[] parameters = command.Split(' ');
+        if (Regex.IsMatch(parameters[0], @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            if (parameters.Length > 1)
+            {
+                if (cmdIsValid(command))
+                {
+                    yield return null;
+                    for (int i = 1; i < parameters.Length; i++)
+                    {
+                        if (parameters[i].EqualsIgnoreCase("1"))
+                        {
+                            btns[0].OnInteract();
+                        }
+                        else if (parameters[i].EqualsIgnoreCase("2"))
+                        {
+                            btns[1].OnInteract();
+                        }
+                        else if (parameters[i].EqualsIgnoreCase("3"))
+                        {
+                            btns[2].OnInteract();
+                        }
+                        else if (parameters[i].EqualsIgnoreCase("4"))
+                        {
+                            btns[3].OnInteract();
+                        }
+                        else if (parameters[i].EqualsIgnoreCase("5"))
+                        {
+                            btns[4].OnInteract();
+                        }
+                        else if (parameters[i].EqualsIgnoreCase("6"))
+                        {
+                            btns[5].OnInteract();
+                        }
+                        else if (parameters[i].EqualsIgnoreCase("7"))
+                        {
+                            btns[6].OnInteract();
+                        }
+                        else if (parameters[i].EqualsIgnoreCase("8"))
+                        {
+                            btns[7].OnInteract();
+                        }
+                        else if (parameters[i].EqualsIgnoreCase("9"))
+                        {
+                            btns[8].OnInteract();
+                        }
+                        else if (parameters[i].EqualsIgnoreCase("10"))
+                        {
+                            btns[9].OnInteract();
+                        }
+                        yield return new WaitForSeconds(1.0f);
+                    }
+                }
+            }
+            yield break;
+        }
+    }
 }
