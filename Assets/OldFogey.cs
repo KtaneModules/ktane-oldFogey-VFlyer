@@ -252,7 +252,7 @@ public class OldFogey : MonoBehaviour
 	{
 		if(presses.Exists(x => btnSounds[x] / 5 == correctTape))
 		{
-        	Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1} {2} {3} {4}. Button {5} belongs to the correct tape.", moduleId, presses.ElementAt(0) + 1, presses.ElementAt(1) + 1, presses.ElementAt(2) + 1, presses.ElementAt(3) + 1, presses.IndexOf(correctTape) + 1);
+        	Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1} {2} {3} {4}. At least one button sound belongs to the correct tape.", moduleId, presses.ElementAt(0) + 1, presses.ElementAt(1) + 1, presses.ElementAt(2) + 1, presses.ElementAt(3) + 1);
 			GetComponent<KMBombModule>().HandleStrike();
 			display.text = "";
 			screen.GetComponentInChildren<Renderer>().material = screenColors[0];
