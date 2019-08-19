@@ -61,6 +61,7 @@ public class OldFogey : MonoBehaviour
 	void Start () 
 	{
 		SetUpBtns();
+		ResizeLights();
 	}
 
 	void PressButton(int btn)
@@ -326,6 +327,15 @@ public class OldFogey : MonoBehaviour
 		}
 
 		return "";
+	}
+
+	void ResizeLights()
+	{
+		float scalar = fakeStatusLight.transform.lossyScale.x;
+
+		for(int i = 0; i < 8; i++)
+			foreach(Light l in fakeStatusLight.transform.GetChild(i).GetComponentsInChildren<Light>())
+				l.range *= scalar;
 	}
 
 	IEnumerator StopSound(KMAudio.KMAudioRef sound)
