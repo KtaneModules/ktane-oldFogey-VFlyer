@@ -389,7 +389,8 @@ public class OldFogey : MonoBehaviour
             submit = false;
             display.text = "";
             screen.GetComponentInChildren<Renderer>().material = screenColors[0];
-            StopCoroutine(colorFlash);
+            if (colorFlash != null)
+                StopCoroutine(colorFlash);
             yield break;
         }
         if (Regex.IsMatch(command, @"^\s*submit\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
