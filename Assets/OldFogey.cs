@@ -25,6 +25,8 @@ public class OldFogey : MonoBehaviour
 	RGBColor[] btnColors;
 
 	Coroutine colorFlash;
+	Coroutine soundStop;
+	KMAudio.KMAudioRef sound;
 
 	bool submit = false;
 	List<int> presses;
@@ -106,7 +108,11 @@ public class OldFogey : MonoBehaviour
 
 	void PlaySound(int n)
 	{
-		KMAudio.KMAudioRef sound = null; 
+		if(soundStop != null)
+			sound.StopSound();
+
+		if(soundStop != null)
+			StopCoroutine(soundStop);
 
 		switch(n)
 		{
@@ -141,8 +147,7 @@ public class OldFogey : MonoBehaviour
 			case 24: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.PageTurn, transform); break;
 		}
 
-		if(n == 6 || n == 8)
-			StartCoroutine(StopSound(sound));
+		soundStop = StartCoroutine(StopSound(sound));
 	}
 
 	void SetUpBtns()
@@ -340,7 +345,7 @@ public class OldFogey : MonoBehaviour
 
 	IEnumerator StopSound(KMAudio.KMAudioRef sound)
 	{
-		yield return new WaitForSeconds(2.3f);
+		yield return new WaitForSeconds(4f);
 		sound.StopSound();
 	}
 
