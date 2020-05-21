@@ -24,8 +24,7 @@ public class OldFogey : MonoBehaviour
 	int[] btnSounds;
 	RGBColor[] btnColors;
 
-	Coroutine colorFlash;
-	Coroutine soundStop;
+	Coroutine colorFlash, soundStop;
 	KMAudio.KMAudioRef sound;
 
 	bool submit = false;
@@ -37,27 +36,22 @@ public class OldFogey : MonoBehaviour
     int moduleId;
     private bool moduleSolved;
 
+	int[] autoSolvePresses;
+
 	void Awake()
 	{
 		moduleId = moduleIdCounter++;
-		GetComponent<KMBombModule>().OnActivate += Activate;
 
-		btns[0].OnInteract += delegate () { PressButton(0); return false; };
-		btns[1].OnInteract += delegate () { PressButton(1); return false; };
-		btns[2].OnInteract += delegate () { PressButton(2); return false; };
-		btns[3].OnInteract += delegate () { PressButton(3); return false; };
-		btns[4].OnInteract += delegate () { PressButton(4); return false; };
-		btns[5].OnInteract += delegate () { PressButton(5); return false; };
-		btns[6].OnInteract += delegate () { PressButton(6); return false; };
-		btns[7].OnInteract += delegate () { PressButton(7); return false; };
-		btns[8].OnInteract += delegate () { PressButton(8); return false; };
-		btns[9].OnInteract += delegate () { PressButton(9); return false; };
+		for (int x = 0; x < btns.Length; x++)
+		{
+			int y = x;
+			btns[x].OnInteract += delegate
+			{
+				PressButton(y);
+				return false;
+			};
+		}
 		submitBtn.OnInteract += delegate () { HandleSubmit(); return false; };
-	}
-
-	void Activate()
-	{
-		
 	}
 
 	void Start () 
@@ -101,7 +95,7 @@ public class OldFogey : MonoBehaviour
 		{
 			PlaySound(btnSounds[btn]);
 			if(colorFlash != null)
-			StopCoroutine(colorFlash);
+				StopCoroutine(colorFlash);
 			colorFlash = StartCoroutine(ColorFlash(btnColors[btn], false));
 		}	
 	}
@@ -109,44 +103,85 @@ public class OldFogey : MonoBehaviour
 	void PlaySound(int n)
 	{
 		if(soundStop != null)
-			sound.StopSound();
-
-		if(soundStop != null)
-			StopCoroutine(soundStop);
-
-		switch(n)
 		{
-			case 0: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.ButtonPress, transform); break;
-			case 1: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.BigButtonRelease, transform); break;
-			case 2: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.WireSnip, transform); break;
-			case 3: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.Strike, transform); break;
-			case 4: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.WireSequenceMechanism, transform); break;
-
-			case 5: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.NeedyActivated, transform); break;
-			case 6: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.NeedyWarning, transform); break;
-			case 7: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.EmergencyAlarm, transform); break;
-			case 8: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.AlarmClockBeep, transform); break;
-			case 9: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.AlarmClockSnooze, transform); break;
-
-			case 10: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.FastestTimerBeep, transform); break;
-			case 11: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.CapacitorPop, transform); break;
-			case 12: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.LightBuzz, transform); break;
-			case 13: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.LightBuzzShort, transform); break;
-			case 14: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.SelectionTick, transform); break;
-
-			case 15: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.BombDefused, transform); break;
-			case 16: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.BombExplode, transform); break;
-			case 17: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.CorrectChime, transform); break;
-			case 18: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.TypewriterKey, transform); break;
-			case 19: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.GameOverFanfare, transform); break;
-
-			case 20: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.Switch, transform); break;
-			case 21: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.Stamp, transform); break;
-			case 22: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.BombDrop, transform); break;
-			case 23: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.BriefcaseOpen, transform); break;
-			case 24: sound = GetComponent<KMAudio>().PlayGameSoundAtTransformWithRef(KMSoundOverride.SoundEffect.PageTurn, transform); break;
+			StopCoroutine(soundStop);
+			if (sound != null)
+				sound.StopSound();
 		}
+		//Debug.LogFormat("[Old Fogey #{0}] Attempting to play track {1} - tape {2}", moduleId, n / 5 + 1, n % 5 + 1);
 
+		KMSoundOverride.SoundEffect[] possibleSounds = {
+			// Tape 1
+			KMSoundOverride.SoundEffect.ButtonPress,
+			KMSoundOverride.SoundEffect.BigButtonRelease,
+			KMSoundOverride.SoundEffect.WireSnip,
+			KMSoundOverride.SoundEffect.Strike,
+			KMSoundOverride.SoundEffect.WireSequenceMechanism,
+			// Tape 2
+			KMSoundOverride.SoundEffect.NeedyActivated,
+			KMSoundOverride.SoundEffect.NeedyWarning,
+			KMSoundOverride.SoundEffect.EmergencyAlarm,
+			KMSoundOverride.SoundEffect.MenuButtonPressed,
+			KMSoundOverride.SoundEffect.TitleMenuPressed,
+			// Tape 3
+			KMSoundOverride.SoundEffect.FastestTimerBeep,
+			KMSoundOverride.SoundEffect.CapacitorPop,
+			KMSoundOverride.SoundEffect.LightBuzz,
+			KMSoundOverride.SoundEffect.LightBuzzShort,
+			KMSoundOverride.SoundEffect.SelectionTick,
+			// Tape 4
+			KMSoundOverride.SoundEffect.BombDefused,
+			KMSoundOverride.SoundEffect.BombExplode,
+			KMSoundOverride.SoundEffect.CorrectChime,
+			KMSoundOverride.SoundEffect.TypewriterKey,
+			KMSoundOverride.SoundEffect.GameOverFanfare,
+			// Tape 5
+			KMSoundOverride.SoundEffect.Switch,
+			KMSoundOverride.SoundEffect.Stamp,
+			KMSoundOverride.SoundEffect.BombDrop,
+			KMSoundOverride.SoundEffect.BriefcaseOpen,
+			KMSoundOverride.SoundEffect.PageTurn,
+		};
+		string[] alternativeSoundNames = {
+			"Tape1Track1",
+			"Tape1Track2",
+			"Tape1Track3",
+			"Tape1Track4",
+			"Tape1Track5",
+			"Tape2Track1",
+			"Tape2Track2",
+			"Tape2Track3",
+			"Tape2Track4",
+			"Tape2Track5",
+			"Tape3Track1",
+			"Tape3Track2",
+			"Tape3Track3",
+			"Tape3Track4",
+			"Tape3Track5",
+			"Tape4Track1",
+			"Tape4Track2",
+			"Tape4Track3",
+			"Tape4Track4",
+			"Tape4Track5",
+			"Tape5Track1",
+			"Tape5Track2",
+			"Tape5Track3",
+			"Tape5Track4",
+			"Tape5Track5"
+		};
+		if (n >= 0 && n < possibleSounds.Length)
+		{
+			try
+			{
+				sound = Audio.PlayGameSoundAtTransformWithRef(possibleSounds[n], transform);
+			}
+			finally
+			{
+				
+			}
+		}
+		else
+			sound = null;
 		soundStop = StartCoroutine(StopSound(sound));
 	}
 
@@ -235,12 +270,13 @@ public class OldFogey : MonoBehaviour
         	Debug.LogFormat("[Old Fogey #{0}] Button {1} sound is Tape {2} - Track {3}.", moduleId, i+1, (btnSounds[i] / 5) + 1, (btnSounds[i] % 5) + 1);
 
         Debug.LogFormat("[Old Fogey #{0}] Correct tape is tape {1}.", moduleId, correctTape + 1);
-        Debug.LogFormat("[Old Fogey #{0}] Example of correct input sequence is {1} {2} {3} {4}.", moduleId, priority[0] + 1, priority[1] + 1, priority[2] + 1, priority[3] + 1);
+        Debug.LogFormat("[Old Fogey #{0}] Example of correct input sequence: {1}.", moduleId, priority.Select(a => a + 1).Take(4).Join());
+		autoSolvePresses = priority.ToArray();
 	}
 
 	void HandleSubmit()
 	{
-		GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
+		Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
 		submitBtn.AddInteractionPunch(.5f);
 
 		if(moduleSolved || submit)
@@ -258,7 +294,7 @@ public class OldFogey : MonoBehaviour
 	{
 		if(presses.Exists(x => btnSounds[x] / 5 == correctTape))
 		{
-        	Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1} {2} {3} {4}. At least one button sound belongs to the correct tape.", moduleId, presses.ElementAt(0) + 1, presses.ElementAt(1) + 1, presses.ElementAt(2) + 1, presses.ElementAt(3) + 1);
+        	Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1}. At least one button sound belongs to the correct tape.", moduleId, presses.Select(a => a + 1).Join());
 			GetComponent<KMBombModule>().HandleStrike();
 			display.text = "";
 			screen.GetComponentInChildren<Renderer>().material = screenColors[0];
@@ -271,7 +307,7 @@ public class OldFogey : MonoBehaviour
 			{
 				if(btnSounds[presses[i]] / 5 == btnSounds[presses[j]] / 5)
 				{
-					Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1} {2} {3} {4}. Buttons {5} and {6} belong to the same tape.", moduleId, presses.ElementAt(0) + 1, presses.ElementAt(1) + 1, presses.ElementAt(2) + 1, presses.ElementAt(3) + 1, presses.ElementAt(i) + 1, presses.ElementAt(j) + 1);
+					Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1}. Buttons {2} and {3} belong to the same tape.", moduleId, presses.Select(a => a + 1).Join(), presses.ElementAt(i) + 1, presses.ElementAt(j) + 1);
 					GetComponent<KMBombModule>().HandleStrike();
 					display.text = "";
 					screen.GetComponentInChildren<Renderer>().material = screenColors[0];
@@ -280,7 +316,7 @@ public class OldFogey : MonoBehaviour
 				}
 				else if(btnSounds[presses[i]] % 5 == btnSounds[presses[j]] % 5)
 				{
-					Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1} {2} {3} {4}. Buttons {5} and {6} have the same track number.", moduleId, presses.ElementAt(0) + 1, presses.ElementAt(1) + 1, presses.ElementAt(2) + 1, presses.ElementAt(3) + 1, presses.ElementAt(i) + 1, presses.ElementAt(j) + 1);
+					Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1}. Buttons {2} and {3} have the same track number.", moduleId, presses.Select(a => a + 1).Join(), presses.ElementAt(i) + 1, presses.ElementAt(j) + 1);
 					GetComponent<KMBombModule>().HandleStrike();
 					display.text = "";
 					screen.GetComponentInChildren<Renderer>().material = screenColors[0];
@@ -295,7 +331,7 @@ public class OldFogey : MonoBehaviour
 		
 		if(!c.Equals(new RGBColor(10)))
 		{
-			Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1} {2} {3} {4}. Final color was {5}, not Green.", moduleId, presses.ElementAt(0) + 1, presses.ElementAt(1) + 1, presses.ElementAt(2) + 1, presses.ElementAt(3) + 1, c.GetName());
+			Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1}. Final color was {2}, not Green.", moduleId, presses.Select(a => a + 1).Join(), c.GetName());
 			GetComponent<KMBombModule>().HandleStrike();
 			display.text = "";
 			screen.GetComponentInChildren<Renderer>().material = screenColors[0];
@@ -304,7 +340,7 @@ public class OldFogey : MonoBehaviour
 		}
 
 		moduleSolved = true;
-		Debug.LogFormat("[Old Fogey #{0}] Recieved input: {1} {2} {3} {4}. Module solved.", moduleId, presses.ElementAt(0) + 1, presses.ElementAt(1) + 1, presses.ElementAt(2) + 1, presses.ElementAt(3) + 1);
+		Debug.LogFormat("[Old Fogey #{0}] Recieved input: {1}. Module solved.", moduleId, presses.Select(a => a + 1).Join());
 		for(int i = 0; i < 5; i++)
 			if(!presses.Exists(x => btnSounds[x] % 5 == i))
 				PlaySound(correctTape * 5 + i);
@@ -343,10 +379,11 @@ public class OldFogey : MonoBehaviour
 				l.range *= scalar;
 	}
 
-	IEnumerator StopSound(KMAudio.KMAudioRef sound)
+	IEnumerator StopSound(KMAudio.KMAudioRef givenSound)
 	{
 		yield return new WaitForSeconds(4f);
-		sound.StopSound();
+		if (givenSound != null)
+			givenSound.StopSound();
 	}
 
 	IEnumerator ColorFlash(RGBColor color, bool restore)
@@ -366,13 +403,14 @@ public class OldFogey : MonoBehaviour
 			submit = false;
 	}
 
-    //twitch plays
-    private bool cmdIsValid(string param)
+	//Twitch Plays Handling
+	readonly string[] validInputs = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };
+	private bool cmdIsValid(string param)
     {
         string[] parameters = param.Split(' ', ',');
         for (int i = 1; i < parameters.Length; i++)
         {
-            if (!parameters[i].EqualsIgnoreCase("1") && !parameters[i].EqualsIgnoreCase("2") && !parameters[i].EqualsIgnoreCase("3") && !parameters[i].EqualsIgnoreCase("4") && !parameters[i].EqualsIgnoreCase("5") && !parameters[i].EqualsIgnoreCase("6") && !parameters[i].EqualsIgnoreCase("7") && !parameters[i].EqualsIgnoreCase("8") && !parameters[i].EqualsIgnoreCase("9") && !parameters[i].EqualsIgnoreCase("10"))
+            if (!validInputs.Contains(parameters[i]))
             {
                 return false;
             }
@@ -380,8 +418,27 @@ public class OldFogey : MonoBehaviour
         return true;
     }
 
-    #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} press <button> [Presses the specified button] | !{0} press <button <button> [Example of button press chaining] | !{0} submit [Presses the submit button] | !{0} reset [Resets all inputs] | Valid buttons for the press command are 1-10, representing the buttons in reading order";
+	IEnumerator TwitchHandleForcedSolve()
+	{
+		Debug.LogFormat("[Old Fogey #{0}] Force solve issued viva TP handler.", moduleId);
+		if (!submit)
+		{
+			submitBtn.OnInteract();
+			yield return new WaitForSeconds(0);
+		}
+		for (int x = 0; x < autoSolvePresses.Length; x++)
+		{
+			btns[autoSolvePresses[x]].OnInteract();
+			sound.StopSound();
+			yield return new WaitForSeconds(0);
+		}
+
+		yield return true;
+
+	}
+
+	#pragma warning disable 414
+	private readonly string TwitchHelpMessage = @"!{0} press <button> [Presses the specified button] | !{0} press <button <button> [Example of button press chaining] | !{0} submit [Presses the submit button] | !{0} reset [Resets all inputs] | Valid buttons for the press command are 1-10, representing the buttons in reading order";
     #pragma warning restore 414
 
     IEnumerator ProcessTwitchCommand(string command)
@@ -405,6 +462,7 @@ public class OldFogey : MonoBehaviour
             yield break;
         }
         string[] parameters = command.Split(' ');
+		
         if (Regex.IsMatch(parameters[0], @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
             if (parameters.Length > 1)
@@ -414,46 +472,8 @@ public class OldFogey : MonoBehaviour
                     yield return null;
                     for (int i = 1; i < parameters.Length; i++)
                     {
-                        if (parameters[i].EqualsIgnoreCase("1"))
-                        {
-                            btns[0].OnInteract();
-                        }
-                        else if (parameters[i].EqualsIgnoreCase("2"))
-                        {
-                            btns[1].OnInteract();
-                        }
-                        else if (parameters[i].EqualsIgnoreCase("3"))
-                        {
-                            btns[2].OnInteract();
-                        }
-                        else if (parameters[i].EqualsIgnoreCase("4"))
-                        {
-                            btns[3].OnInteract();
-                        }
-                        else if (parameters[i].EqualsIgnoreCase("5"))
-                        {
-                            btns[4].OnInteract();
-                        }
-                        else if (parameters[i].EqualsIgnoreCase("6"))
-                        {
-                            btns[5].OnInteract();
-                        }
-                        else if (parameters[i].EqualsIgnoreCase("7"))
-                        {
-                            btns[6].OnInteract();
-                        }
-                        else if (parameters[i].EqualsIgnoreCase("8"))
-                        {
-                            btns[7].OnInteract();
-                        }
-                        else if (parameters[i].EqualsIgnoreCase("9"))
-                        {
-                            btns[8].OnInteract();
-                        }
-                        else if (parameters[i].EqualsIgnoreCase("10"))
-                        {
-                            btns[9].OnInteract();
-                        }
+						yield return "trycancel Sorry, but the command was canceled after " + i + "/" + (parameters.Length - 1) + " presses.";
+						btns[validInputs.ToList().IndexOf(parameters[i])].OnInteract();
                         yield return new WaitForSeconds(1.0f);
                     }
                 }
