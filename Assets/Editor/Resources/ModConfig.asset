@@ -12,12 +12,14 @@ MonoBehaviour:
   m_Name: ModConfig
   m_EditorClassIdentifier: 
   id: oldFogey
-  title: Old Fogey
+  title: Old Fogey [REUPLOAD]
   description: "\u201CThese kids today with their shiny mods and their newfangled
-    needies. Twenty Comp Wires and twenty Knobs. Now that\u2019s real KTaNE.\u201D\n\r\n[b][\\b]\n\nModule
-    Originally created by TheThirdMan\r\nReuploaded and maintained by VFlyer\nmoduleID:
-    oldFogey\r\n\r\nGitHub Repository: https://github.com/luisdiogo98/ktane-oldFogey\n\r\nManual
-    HTML: https://ktane.timwi.de/HTML/Old%20Fogey.html\r\nManual PDF: https://ktane.timwi.de/PDF/Old%20Fogey.pdf\r"
+    needies. Twenty Comp Wires and twenty Knobs. Now that\u2019s real KTaNE.\u201D\n\r\n[b]This
+    is a reupload of the original module by the original author. Please disable/unsubscribe
+    the old version [url=]here.[/url][/b]\n\nModule Originally created by TheThirdMan\r\nReuploaded
+    and maintained by VFlyer\nmoduleID: oldFogey\r\n\r\nGitHub (Latest): https://github.com/VFlyer/ktane-oldFogey\nGitHub
+    (Old): https://github.com/luisdiogo98/ktane-oldFogey\n\r\nManual HTML: https://ktane.timwi.de/HTML/Old%20Fogey.html\r\nManual
+    PDF: https://ktane.timwi.de/PDF/Old%20Fogey.pdf\r"
   version: 1.5
   outputFolder: build
   previewImage: {fileID: 2800000, guid: d51e1c2742f6554408f805540a2c76b2, type: 3}

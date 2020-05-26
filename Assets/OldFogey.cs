@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using KModkit;
+//using KModkit;
 using rnd = UnityEngine.Random;
-using System.Text.RegularExpressions;
+//using System.Text.RegularExpressions;
 
 public class OldFogey : MonoBehaviour 
 {
@@ -173,7 +173,7 @@ public class OldFogey : MonoBehaviour
 		{
 			try
 			{
-				sound = Audio.PlayGameSoundAtTransformWithRef(possibleSounds[n], transform);
+				sound = Audio.PlayGameSoundAtTransformWithRef(possibleSounds[n], transform); // Note to self: method cannot by easily bypassed.
 			}
 			finally
 			{
@@ -351,7 +351,7 @@ public class OldFogey : MonoBehaviour
 		GetComponent<KMBombModule>().HandlePass();
 	}
 
-	String GetButtonSymbol(int btn)
+	string GetButtonSymbol(int btn)
 	{
 		switch(btn)
 		{
@@ -424,13 +424,13 @@ public class OldFogey : MonoBehaviour
 		if (!submit)
 		{
 			submitBtn.OnInteract();
-			yield return new WaitForSeconds(0);
+			yield return new WaitForSeconds(0.05f);
 		}
 		for (int x = 0; x < autoSolvePresses.Length; x++)
 		{
 			btns[autoSolvePresses[x]].OnInteract();
 			sound.StopSound();
-			yield return new WaitForSeconds(0);
+			yield return new WaitForSeconds(0.05f);
 		}
 
 		yield return true;
@@ -438,47 +438,57 @@ public class OldFogey : MonoBehaviour
 	}
 
 	#pragma warning disable 414
-	private readonly string TwitchHelpMessage = @"!{0} press <button> [Presses the specified button] | !{0} press <button <button> [Example of button press chaining] | !{0} submit [Presses the submit button] | !{0} reset [Resets all inputs] | Valid buttons for the press command are 1-10, representing the buttons in reading order";
+	private readonly string TwitchHelpMessage = "Press the following buttons with \"!{0} press 1\" Valid buttons for the press command are 1-10; 1 representing the ❖ button and its variants in reading order. Multiple buttons presses can be chained I.E \"!{0} press 1 2 3 4 5...\" Press the submit button with \"!{0} submit\" Reset inputs while submitting with \"!{0} reset\"";
     #pragma warning restore 414
 
     IEnumerator ProcessTwitchCommand(string command)
     {
-        if (Regex.IsMatch(command, @"^\s*reset\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+		command = command.ToLower();
+        if (command.RegexMatch(@"^reset$"))
         {
+			if (!submit)
+			{
+				yield return "sendtochaterror The module is not submitting yet. You can only reset inputs if the submit button is pressed.";
+				yield break;
+			}
             yield return null;
             Debug.LogFormat("[Old Fogey #{0}] Reset of inputs triggered! (TP)", moduleId);
-            presses = new List<int>();
+            presses.Clear();
             submit = false;
             display.text = "";
             screen.GetComponentInChildren<Renderer>().material = screenColors[0];
             if (colorFlash != null)
                 StopCoroutine(colorFlash);
-            yield break;
         }
-        if (Regex.IsMatch(command, @"^\s*submit\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+		else if (command.RegexMatch(@"^submit$"))
         {
             yield return null;
             submitBtn.OnInteract();
-            yield break;
+
         }
-        string[] parameters = command.Split(' ');
-		
-        if (Regex.IsMatch(parameters[0], @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-        {
-            if (parameters.Length > 1)
-            {
-                if (cmdIsValid(command))
-                {
-                    yield return null;
-                    for (int i = 1; i < parameters.Length; i++)
-                    {
-						yield return "trycancel Sorry, but the command was canceled after " + i + "/" + (parameters.Length - 1) + " presses.";
-						btns[validInputs.ToList().IndexOf(parameters[i])].OnInteract();
-                        yield return new WaitForSeconds(1.0f);
-                    }
-                }
-            }
-            yield break;
-        }
-    }
+		else if (command.RegexMatch(@"^press\s\d{1,2}((\s|,)\s?\d{1,2})?$"))
+		{
+			List<KMSelectable> selectablesTP = new List<KMSelectable>();
+			string[] possibleItems = command.Replace("press ", "").Split();
+			foreach (string currentItem in possibleItems)
+			{
+				if (validInputs.Contains(currentItem.Trim()))
+				{
+					selectablesTP.Add(btns[Array.IndexOf(validInputs, currentItem)]);
+				}
+				else
+				{
+					yield return "sendtochaterror Sorry but \""+currentItem+"\" is not a valid button.";
+					yield break;
+				}
+			}
+			for (int x = 0; x < selectablesTP.Count; x++)
+			{
+				yield return "trycancel Your button interaction has been canceled.";
+				selectablesTP[x].OnInteract();
+				yield return new WaitForSeconds(submit ? 0.1f : 1f);
+			}
+		}
+		yield break;
+	}
 }
