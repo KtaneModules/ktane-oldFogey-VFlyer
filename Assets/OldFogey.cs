@@ -286,6 +286,7 @@ public class OldFogey : MonoBehaviour
 		display.text = "";
 		Audio.PlaySoundAtTransform("spark", transform);
 		screen.GetComponentInChildren<Renderer>().material = screenColors[1];
+		if (presses == null) presses = new List<int>();
 		presses.Clear();
 		currentColor = startColor.Clone();
 	}
