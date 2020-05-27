@@ -264,13 +264,13 @@ public class OldFogey : MonoBehaviour
 		}
 
 		for(int i = 0; i < btnColors.Length; i++)
-        	Debug.LogFormat("[Old Fogey #{0}] Button {1} color is {2}.", moduleId, i+1, btnColors[i].GetName());
+        	Debug.LogFormat("[Old Fogey #{0}] Button {1}'s color: {2}.", moduleId, i+1, btnColors[i].GetName());
 
 		for(int i = 0; i < btnSounds.Length; i++)
-        	Debug.LogFormat("[Old Fogey #{0}] Button {1} sound is Tape {2} - Track {3}.", moduleId, i+1, (btnSounds[i] / 5) + 1, (btnSounds[i] % 5) + 1);
+        	Debug.LogFormat("[Old Fogey #{0}] Button {1}'s sound: Tape {2} - Track {3}.", moduleId, i+1, (btnSounds[i] / 5) + 1, (btnSounds[i] % 5) + 1);
 
-        Debug.LogFormat("[Old Fogey #{0}] Correct tape is tape {1}.", moduleId, correctTape + 1);
-        Debug.LogFormat("[Old Fogey #{0}] Example of correct input sequence: {1}.", moduleId, priority.Select(a => a + 1).Take(4).Join());
+        Debug.LogFormat("[Old Fogey #{0}] Correct tape: tape {1}.", moduleId, correctTape + 1);
+        Debug.LogFormat("[Old Fogey #{0}] One possible correct input sequence: {1}.", moduleId, priority.Select(a => a + 1).Take(4).Join());
 		autoSolvePresses = priority.ToArray();
 	}
 
@@ -286,7 +286,7 @@ public class OldFogey : MonoBehaviour
 		display.text = "";
 		Audio.PlaySoundAtTransform("spark", transform);
 		screen.GetComponentInChildren<Renderer>().material = screenColors[1];
-		presses = new List<int>();
+		presses.Clear();
 		currentColor = startColor.Clone();
 	}
 
@@ -466,7 +466,7 @@ public class OldFogey : MonoBehaviour
             submitBtn.OnInteract();
 
         }
-		else if (command.RegexMatch(@"^press\s\d{1,2}((\s|,)\s?\d{1,2})?$"))
+		else if (command.RegexMatch(@"^press\s\d{1,2}((\s|,)\s?\d{1,2})*$"))
 		{
 			List<KMSelectable> selectablesTP = new List<KMSelectable>();
 			string[] possibleItems = command.Replace("press ", "").Split();
@@ -486,7 +486,7 @@ public class OldFogey : MonoBehaviour
 			{
 				yield return "trycancel Your button interaction has been canceled.";
 				selectablesTP[x].OnInteract();
-				yield return new WaitForSeconds(submit ? 0.1f : 1f);
+				yield return new WaitForSeconds(submit ? 0.1f : 0.75f);
 			}
 		}
 		yield break;
