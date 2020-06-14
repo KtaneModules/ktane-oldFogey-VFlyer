@@ -24,7 +24,7 @@ public class OldFogey : MonoBehaviour
 	int[] btnSounds;
 	RGBColor[] btnColors;
 
-	Coroutine colorFlash, soundStop;
+	IEnumerator colorFlash, soundStop;
 	KMAudio.KMAudioRef sound;
 
 	bool submit = false;
@@ -34,7 +34,7 @@ public class OldFogey : MonoBehaviour
 	//Logging
 	static int moduleIdCounter = 1;
     int moduleId;
-    private bool moduleSolved;
+    private bool moduleSolved, playSounds = true;
 
 	int[] autoSolvePresses;
 
@@ -96,7 +96,8 @@ public class OldFogey : MonoBehaviour
 			PlaySound(btnSounds[btn]);
 			if(colorFlash != null)
 				StopCoroutine(colorFlash);
-			colorFlash = StartCoroutine(ColorFlash(btnColors[btn], false));
+			colorFlash = ColorFlash(btnColors[btn], false);
+			StartCoroutine(colorFlash);
 		}	
 	}
 
@@ -108,8 +109,6 @@ public class OldFogey : MonoBehaviour
 			if (sound != null)
 				sound.StopSound();
 		}
-		//Debug.LogFormat("[Old Fogey #{0}] Attempting to play track {1} - tape {2}", moduleId, n / 5 + 1, n % 5 + 1);
-
 		KMSoundOverride.SoundEffect[] possibleSounds = {
 			// Tape 1
 			KMSoundOverride.SoundEffect.ButtonPress,
@@ -169,20 +168,28 @@ public class OldFogey : MonoBehaviour
 			"Tape5Track4",
 			"Tape5Track5"
 		};
-		if (n >= 0 && n < possibleSounds.Length)
+		int[] playIdxAlts = { 14 };
+		if (playSounds)
 		{
-			try
+			if (n >= 0 && n < possibleSounds.Length)
 			{
-				sound = Audio.PlayGameSoundAtTransformWithRef(possibleSounds[n], transform); // Note to self: method cannot by easily bypassed.
+				Debug.LogFormat("<Old Fogey #{0}> Attempting to play track {1} - tape {2}", moduleId, n / 5 + 1, n % 5 + 1);
+
+				if (playIdxAlts.Contains(n))
+				{
+					Debug.LogFormat("<Old Fogey #{0}> Bypassing game sound handler with {1}", moduleId, alternativeSoundNames[n]);
+					Audio.PlaySoundAtTransform(alternativeSoundNames[n], transform);
+				}
+				else
+				{
+					sound = Audio.PlayGameSoundAtTransformWithRef(possibleSounds[n], transform); // Note to self: method cannot by easily bypassed internally.
+				}
 			}
-			finally
-			{
-				
-			}
+			else
+				sound = null;
+			soundStop = StopSound(sound);
+			StartCoroutine(soundStop);
 		}
-		else
-			sound = null;
-		soundStop = StartCoroutine(StopSound(sound));
 	}
 
 	void SetUpBtns()
@@ -427,13 +434,13 @@ public class OldFogey : MonoBehaviour
 			submitBtn.OnInteract();
 			yield return new WaitForSeconds(0.05f);
 		}
+		playSounds = false;
 		for (int x = 0; x < autoSolvePresses.Length; x++)
 		{
 			btns[autoSolvePresses[x]].OnInteract();
-			sound.StopSound();
+			//sound.StopSound();
 			yield return new WaitForSeconds(0.05f);
 		}
-
 		yield return true;
 
 	}
