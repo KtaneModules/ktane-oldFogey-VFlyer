@@ -27,7 +27,7 @@ class RGBColor
         b = (color % 10) != 0;
     }
 
-    public String GetName()
+    public string GetName()
     {
         switch((r ? 100 : 0) + (g ? 10 : 0) + (b ? 1 : 0))
         {
@@ -41,7 +41,7 @@ class RGBColor
             case 111: return "White";
         }
 
-        return "";
+        return "N/A";
     }
 
     public bool Equals(RGBColor color)

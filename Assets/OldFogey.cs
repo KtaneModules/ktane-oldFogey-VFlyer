@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Bson;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,12 +8,19 @@ using UnityEngine;
 using rnd = UnityEngine.Random;
 //using System.Text.RegularExpressions;
 
-public class OldFogey : MonoBehaviour 
+public class OldFogey : MonoBehaviour
 {
 	public KMBombInfo bomb;
 	public KMAudio Audio;
 
 	public KMSelectable[] btns;
+	public AudioSource audioPlayer;
+	public AudioClip[]
+		overrideTrack1Tape1, overrideTrack2Tape1, overrideTrack3Tape1, overrideTrack4Tape1, overrideTrack5Tape1,
+		overrideTrack1Tape2, overrideTrack2Tape2, overrideTrack3Tape2, overrideTrack4Tape2, overrideTrack5Tape2,
+		overrideTrack1Tape3, overrideTrack2Tape3, overrideTrack3Tape3, overrideTrack4Tape3, overrideTrack5Tape3,
+		overrideTrack1Tape4, overrideTrack2Tape4, overrideTrack3Tape4, overrideTrack4Tape4, overrideTrack5Tape4,
+		overrideTrack1Tape5, overrideTrack2Tape5, overrideTrack3Tape5, overrideTrack4Tape5, overrideTrack5Tape5;
 	public KMSelectable submitBtn;
 	public Material[] screenColors;
 	public GameObject fakeStatusLight;
@@ -32,11 +40,17 @@ public class OldFogey : MonoBehaviour
 	RGBColor currentColor;
 
 	//Logging
-	static int moduleIdCounter = 1;
-    int moduleId;
-    private bool moduleSolved, playSounds = true;
+	private static int moduleIdCounter = 1;
+	private int moduleId;
+	private bool moduleSolved, playSounds = true;
 
 	int[] autoSolvePresses;
+
+
+	string GetStartingColor()
+    {
+		return startColor.GetName();
+    }
 
 	void Awake()
 	{
@@ -54,7 +68,7 @@ public class OldFogey : MonoBehaviour
 		submitBtn.OnInteract += delegate () { HandleSubmit(); return false; };
 	}
 
-	void Start () 
+	void Start()
 	{
 		SetUpBtns();
 		ResizeLights();
@@ -64,21 +78,21 @@ public class OldFogey : MonoBehaviour
 	{
 		btns[btn].AddInteractionPunch(.5f);
 
-		if(moduleSolved)
+		if (moduleSolved)
 		{
 			PlaySound(btnSounds[btn]);
 			return;
 		}
 
-		if(submit)
+		if (submit)
 		{
-			if(presses.Count() == 4)
+			if (presses.Count() == 4)
 				return;
 
 			presses.Add(btn);
 			display.text += GetButtonSymbol(btn);
-			
-			if(presses.Count() == 4)
+
+			if (presses.Count() == 4)
 			{
 				CheckSolution();
 			}
@@ -86,24 +100,24 @@ public class OldFogey : MonoBehaviour
 			{
 				PlaySound(btnSounds[btn]);
 				currentColor = currentColor.Sum(btnColors[btn]);
-				for(int i = 0; i < fakeStatusLight.transform.childCount; i++)
+				for (int i = 0; i < fakeStatusLight.transform.childCount; i++)
 					fakeStatusLight.transform.GetChild(i).gameObject.SetActive(false);
 				fakeStatusLight.transform.Find(currentColor.GetName()).gameObject.SetActive(true);
 			}
-		}	
+		}
 		else
 		{
 			PlaySound(btnSounds[btn]);
-			if(colorFlash != null)
+			if (colorFlash != null)
 				StopCoroutine(colorFlash);
 			colorFlash = ColorFlash(btnColors[btn], false);
 			StartCoroutine(colorFlash);
-		}	
+		}
 	}
 
 	void PlaySound(int n)
 	{
-		if(soundStop != null)
+		if (soundStop != null)
 		{
 			StopCoroutine(soundStop);
 			if (sound != null)
@@ -147,50 +161,77 @@ public class OldFogey : MonoBehaviour
 			"Tape1Track3",
 			"Tape1Track4",
 			"Tape1Track5",
+
 			"Tape2Track1",
 			"Tape2Track2",
 			"Tape2Track3",
 			"Tape2Track4",
 			"Tape2Track5",
+
 			"Tape3Track1",
 			"Tape3Track2",
 			"Tape3Track3",
 			"Tape3Track4",
 			"Tape3Track5",
+
 			"Tape4Track1",
 			"Tape4Track2",
 			"Tape4Track3",
 			"Tape4Track4",
 			"Tape4Track5",
+
 			"Tape5Track1",
 			"Tape5Track2",
 			"Tape5Track3",
 			"Tape5Track4",
 			"Tape5Track5"
 		};
-		int[] playIdxAlts = { 14 };
+		//int[] playIdxAlts = { 14 };
 		if (playSounds)
 		{
+			/*
 			if (n >= 0 && n < possibleSounds.Length)
 			{
-				Debug.LogFormat("<Old Fogey #{0}> Attempting to play track {1} - tape {2}", moduleId, n / 5 + 1, n % 5 + 1);
-
-				if (playIdxAlts.Contains(n))
-				{
-					Debug.LogFormat("<Old Fogey #{0}> Bypassing game sound handler with {1}", moduleId, alternativeSoundNames[n]);
-					Audio.PlaySoundAtTransform(alternativeSoundNames[n], transform);
+				//Debug.LogFormat("<Old Fogey #{0}> Attempting to play track {1} - tape {2}", moduleId, n / 5 + 1, n % 5 + 1);
+				
+				if (playIdxAlts.Contains(n) || true)
+				{*/
+					//Debug.LogFormat("<Old Fogey #{0}> Bypassing game sound handler with {1}", moduleId, alternativeSoundNames[n]);
+					BypassKMAudio(n);
+				/*
 				}
 				else
 				{
 					sound = Audio.PlayGameSoundAtTransformWithRef(possibleSounds[n], transform); // Note to self: method cannot by easily bypassed internally.
 				}
+				
 			}
 			else
 				sound = null;
 			soundStop = StopSound(sound);
 			StartCoroutine(soundStop);
+			*/
 		}
 	}
+
+	void BypassKMAudio(int idx)
+    {
+		if (idx < 0 || idx >= 25) return;
+
+		AudioClip[][] overrideAudioClips = {
+			overrideTrack1Tape1, overrideTrack2Tape1, overrideTrack3Tape1, overrideTrack4Tape1, overrideTrack5Tape1,
+			overrideTrack1Tape2, overrideTrack2Tape2, overrideTrack3Tape2, overrideTrack4Tape2, overrideTrack5Tape2,
+			overrideTrack1Tape3, overrideTrack2Tape3, overrideTrack3Tape3, overrideTrack4Tape3, overrideTrack5Tape3,
+			overrideTrack1Tape4, overrideTrack2Tape4, overrideTrack3Tape4, overrideTrack4Tape4, overrideTrack5Tape4,
+			overrideTrack1Tape5, overrideTrack2Tape5, overrideTrack3Tape5, overrideTrack4Tape5, overrideTrack5Tape5,
+		};
+
+		if (overrideAudioClips[idx].Any())
+		{
+			audioPlayer.clip = overrideAudioClips[idx][rnd.Range(0, overrideAudioClips[idx].Length)];
+			audioPlayer.Play();
+		}
+    }
 
 	void SetUpBtns()
 	{
@@ -300,14 +341,12 @@ public class OldFogey : MonoBehaviour
 
 	void CheckSolution()
 	{
+		bool isAllCorrect = true;
+
 		if(presses.Exists(x => btnSounds[x] / 5 == correctTape))
 		{
-        	Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1}. At least one button sound belongs to the correct tape.", moduleId, presses.Select(a => a + 1).Join());
-			GetComponent<KMBombModule>().HandleStrike();
-			display.text = "";
-			screen.GetComponentInChildren<Renderer>().material = screenColors[0];
-			StartCoroutine(ColorFlash(new RGBColor(100), true));
-			return;
+        	Debug.LogFormat("[Old Fogey #{0}] At least one button sound must belongs to the correct tape. None of the buttons pressed when submitting belong to the correct tape.", moduleId);
+			isAllCorrect = false;
 		}
 
 		for(int i = 0; i < presses.Count(); i++)
@@ -315,21 +354,13 @@ public class OldFogey : MonoBehaviour
 			{
 				if(btnSounds[presses[i]] / 5 == btnSounds[presses[j]] / 5)
 				{
-					Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1}. Buttons {2} and {3} belong to the same tape.", moduleId, presses.Select(a => a + 1).Join(), presses.ElementAt(i) + 1, presses.ElementAt(j) + 1);
-					GetComponent<KMBombModule>().HandleStrike();
-					display.text = "";
-					screen.GetComponentInChildren<Renderer>().material = screenColors[0];
-					StartCoroutine(ColorFlash(new RGBColor(100), true));
-					return;
+					Debug.LogFormat("[Old Fogey #{0}] Buttons {1} and {2} belong to the same tape.", moduleId, presses.ElementAt(i) + 1, presses.ElementAt(j) + 1);
+					isAllCorrect = false;
 				}
 				else if(btnSounds[presses[i]] % 5 == btnSounds[presses[j]] % 5)
 				{
-					Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1}. Buttons {2} and {3} have the same track number.", moduleId, presses.Select(a => a + 1).Join(), presses.ElementAt(i) + 1, presses.ElementAt(j) + 1);
-					GetComponent<KMBombModule>().HandleStrike();
-					display.text = "";
-					screen.GetComponentInChildren<Renderer>().material = screenColors[0];
-					StartCoroutine(ColorFlash(new RGBColor(100), true));
-					return;
+					Debug.LogFormat("[Old Fogey #{0}] Buttons {1} and {2} have the same track number.", moduleId, presses.ElementAt(i) + 1, presses.ElementAt(j) + 1);
+					isAllCorrect = false;
 				}
 			}
 
@@ -337,9 +368,14 @@ public class OldFogey : MonoBehaviour
 		for(int i = 0; i < presses.Count(); i++)
 			c = c.Sum(btnColors[presses.ElementAt(i)]);
 		
-		if(!c.Equals(new RGBColor(10)))
+		if(!c.Equals(new RGBColor(010)))
 		{
-			Debug.LogFormat("[Old Fogey #{0}] Strike! Recieved input: {1}. Final color was {2}, not Green.", moduleId, presses.Select(a => a + 1).Join(), c.GetName());
+			Debug.LogFormat("[Old Fogey #{0}] Final color was {1}, not Green.", moduleId,  c.GetName());
+			isAllCorrect = false;
+		}
+		if (!isAllCorrect)
+        {
+			Debug.LogFormat("[Old Fogey #{0}] Strike! Not all conditions were correct upon receiving these inputs: {1}.", moduleId, presses.Select(a => a + 1).Join());
 			GetComponent<KMBombModule>().HandleStrike();
 			display.text = "";
 			screen.GetComponentInChildren<Renderer>().material = screenColors[0];
@@ -347,8 +383,9 @@ public class OldFogey : MonoBehaviour
 			return;
 		}
 
+
 		moduleSolved = true;
-		Debug.LogFormat("[Old Fogey #{0}] Recieved input: {1}. Module solved.", moduleId, presses.Select(a => a + 1).Join());
+		Debug.LogFormat("[Old Fogey #{0}] Received input: {1}. Module solved.", moduleId, presses.Select(a => a + 1).Join());
 		for(int i = 0; i < 5; i++)
 			if(!presses.Exists(x => btnSounds[x] % 5 == i))
 				PlaySound(correctTape * 5 + i);
@@ -447,8 +484,9 @@ public class OldFogey : MonoBehaviour
 
 	#pragma warning disable 414
 	private readonly string TwitchHelpMessage = "Press the following buttons with \"!{0} press 1\" Valid buttons for the press command are 1-10; 1 representing the ❖ button and its variants in reading order. Multiple buttons presses can be chained I.E \"!{0} press 1 2 3 4 5...\" Press the submit button with \"!{0} submit\" Reset inputs while submitting with \"!{0} reset\"";
-    #pragma warning restore 414
+#pragma warning restore 414
 
+	private float pressDelay = 1f;
     IEnumerator ProcessTwitchCommand(string command)
     {
 		command = command.ToLower();
@@ -467,17 +505,37 @@ public class OldFogey : MonoBehaviour
             screen.GetComponentInChildren<Renderer>().material = screenColors[0];
             if (colorFlash != null)
                 StopCoroutine(colorFlash);
-        }
+			StartCoroutine(ColorFlash(new RGBColor(000), true));
+
+		}
 		else if (command.RegexMatch(@"^submit$"))
         {
             yield return null;
             submitBtn.OnInteract();
 
         }
+		else if (command.RegexMatch(@"^pressdelay\s\d+(.\d+)?$"))
+		{
+			if (submit)
+			{
+				yield return "sendtochaterror The module is submitting. This essentially does nothing unless you reset submission.";
+				yield break;
+			}
+            float handledPressDelay;
+            if (!float.TryParse(command.Substring(11), out handledPressDelay) || handledPressDelay < 0.75f || handledPressDelay > 4f)
+            {
+				yield return string.Format("sendtochaterror I am unable to set the press delay for Old Fogey (#{0}) to \"{1}\" second(s).","{1}", command.Substring(11));
+				yield break;
+			}
+			yield return null;
+			pressDelay = handledPressDelay;
+			yield return string.Format("sendtochat Press delay for Old Fogey (#{0}) has been set to \"{1}\" second(s).", "{1}", handledPressDelay.ToString("0.00"));
+			yield break;
+		}
 		else if (command.RegexMatch(@"^press\s\d{1,2}((\s|,)\s?\d{1,2})*$"))
 		{
 			List<KMSelectable> selectablesTP = new List<KMSelectable>();
-			string[] possibleItems = command.Replace("press ", "").Split();
+			string[] possibleItems = command.Replace("press", "").Trim().Split();
 			foreach (string currentItem in possibleItems)
 			{
 				if (validInputs.Contains(currentItem.Trim()))
@@ -492,9 +550,18 @@ public class OldFogey : MonoBehaviour
 			}
 			for (int x = 0; x < selectablesTP.Count; x++)
 			{
-				yield return "trycancel Your button interaction has been canceled.";
+				yield return null;
 				selectablesTP[x].OnInteract();
-				yield return new WaitForSeconds(submit ? 0.1f : 0.75f);
+				float timeSpent = 0f;
+				do
+				{
+					yield return string.Format("trycancel Your button interaction has been canceled after {0} press{1}.", x, x == 1 ? "" : "es");
+					yield return new WaitForSeconds(Time.deltaTime);
+					timeSpent += Time.deltaTime;
+				}
+				while (timeSpent < (submit ? 0.1f : pressDelay));
+
+				
 			}
 		}
 		yield break;
