@@ -6,13 +6,14 @@ using System.Linq;
 using UnityEngine;
 //using KModkit;
 using rnd = UnityEngine.Random;
+using KeepCoding;
 //using System.Text.RegularExpressions;
 
 public class OldFogey : MonoBehaviour
 {
 	public KMBombInfo bomb;
 	public KMAudio Audio;
-
+	public KMBombModule modSelf;
 	public KMSelectable[] btns;
 	public AudioSource audioPlayer;
 	public AudioClip[]
@@ -23,7 +24,7 @@ public class OldFogey : MonoBehaviour
 		overrideTrack1Tape5, overrideTrack2Tape5, overrideTrack3Tape5, overrideTrack4Tape5, overrideTrack5Tape5;
 	public KMSelectable submitBtn;
 	public Material[] screenColors;
-	public GameObject fakeStatusLight;
+	public StatusLightFogey fakeStatusLight;
 	public GameObject screen;
 	public TextMesh display;
 
@@ -32,8 +33,7 @@ public class OldFogey : MonoBehaviour
 	int[] btnSounds;
 	RGBColor[] btnColors;
 
-	IEnumerator colorFlash, soundStop;
-	KMAudio.KMAudioRef sound;
+	IEnumerator colorFlash;
 
 	bool submit = false;
 	List<int> presses;
@@ -100,9 +100,7 @@ public class OldFogey : MonoBehaviour
 			{
 				PlaySound(btnSounds[btn]);
 				currentColor = currentColor.Sum(btnColors[btn]);
-				for (int i = 0; i < fakeStatusLight.transform.childCount; i++)
-					fakeStatusLight.transform.GetChild(i).gameObject.SetActive(false);
-				fakeStatusLight.transform.Find(currentColor.GetName()).gameObject.SetActive(true);
+				fakeStatusLight.ShowColor(currentColor.GetName());
 			}
 		}
 		else
@@ -117,75 +115,6 @@ public class OldFogey : MonoBehaviour
 
 	void PlaySound(int n)
 	{
-		if (soundStop != null)
-		{
-			StopCoroutine(soundStop);
-			if (sound != null)
-				sound.StopSound();
-		}
-		KMSoundOverride.SoundEffect[] possibleSounds = {
-			// Tape 1
-			KMSoundOverride.SoundEffect.ButtonPress,
-			KMSoundOverride.SoundEffect.BigButtonRelease,
-			KMSoundOverride.SoundEffect.WireSnip,
-			KMSoundOverride.SoundEffect.Strike,
-			KMSoundOverride.SoundEffect.WireSequenceMechanism,
-			// Tape 2
-			KMSoundOverride.SoundEffect.NeedyActivated,
-			KMSoundOverride.SoundEffect.NeedyWarning,
-			KMSoundOverride.SoundEffect.EmergencyAlarm,
-			KMSoundOverride.SoundEffect.MenuButtonPressed,
-			KMSoundOverride.SoundEffect.TitleMenuPressed,
-			// Tape 3
-			KMSoundOverride.SoundEffect.FastestTimerBeep,
-			KMSoundOverride.SoundEffect.CapacitorPop,
-			KMSoundOverride.SoundEffect.LightBuzz,
-			KMSoundOverride.SoundEffect.LightBuzzShort,
-			KMSoundOverride.SoundEffect.SelectionTick,
-			// Tape 4
-			KMSoundOverride.SoundEffect.BombDefused,
-			KMSoundOverride.SoundEffect.BombExplode,
-			KMSoundOverride.SoundEffect.CorrectChime,
-			KMSoundOverride.SoundEffect.TypewriterKey,
-			KMSoundOverride.SoundEffect.GameOverFanfare,
-			// Tape 5
-			KMSoundOverride.SoundEffect.Switch,
-			KMSoundOverride.SoundEffect.Stamp,
-			KMSoundOverride.SoundEffect.BombDrop,
-			KMSoundOverride.SoundEffect.BriefcaseOpen,
-			KMSoundOverride.SoundEffect.PageTurn,
-		};
-		string[] alternativeSoundNames = {
-			"Tape1Track1",
-			"Tape1Track2",
-			"Tape1Track3",
-			"Tape1Track4",
-			"Tape1Track5",
-
-			"Tape2Track1",
-			"Tape2Track2",
-			"Tape2Track3",
-			"Tape2Track4",
-			"Tape2Track5",
-
-			"Tape3Track1",
-			"Tape3Track2",
-			"Tape3Track3",
-			"Tape3Track4",
-			"Tape3Track5",
-
-			"Tape4Track1",
-			"Tape4Track2",
-			"Tape4Track3",
-			"Tape4Track4",
-			"Tape4Track5",
-
-			"Tape5Track1",
-			"Tape5Track2",
-			"Tape5Track3",
-			"Tape5Track4",
-			"Tape5Track5"
-		};
 		//int[] playIdxAlts = { 14 };
 		if (playSounds)
 		{
@@ -229,6 +158,7 @@ public class OldFogey : MonoBehaviour
 		if (overrideAudioClips[idx].Any())
 		{
 			audioPlayer.clip = overrideAudioClips[idx][rnd.Range(0, overrideAudioClips[idx].Length)];
+            audioPlayer.volume = Game.PlayerSettings.SFXVolume / 100f;
 			audioPlayer.Play();
 		}
     }
@@ -249,8 +179,8 @@ public class OldFogey : MonoBehaviour
 		int tempColor;
 		do {tempColor = (rnd.Range(0, 2) * 100) + (rnd.Range(0, 2) * 10) + (rnd.Range(0, 2));} while (tempColor == 0);
 		startColor = new RGBColor(tempColor);
-		fakeStatusLight.transform.Find(startColor.GetName()).gameObject.SetActive(true);
-        Debug.LogFormat("[Old Fogey #{0}] Starting status light color is {1}.", moduleId, startColor.GetName());
+		fakeStatusLight.ShowColor(startColor.GetName());
+		Debug.LogFormat("[Old Fogey #{0}] Starting status light color: {1}.", moduleId, startColor.GetName());
 
 		for(int i = 0; i < btnColors.Length; i++)
 		{
@@ -258,7 +188,7 @@ public class OldFogey : MonoBehaviour
 		}
 
 		correctTape = btnColors[0].GetTapeNumber();
-
+		currentColor = startColor.Clone();
 		RGBColor c = startColor.Clone();
 		for(int i = 0; i < 4; i++)
 			c = c.Sum(btnColors[priority[i]]);
@@ -327,9 +257,18 @@ public class OldFogey : MonoBehaviour
 		Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
 		submitBtn.AddInteractionPunch(.5f);
 
-		if(moduleSolved || submit)
+		if(moduleSolved)
 			return;
-
+		if (submit)
+        {
+			submit = false;
+			screen.GetComponentInChildren<Renderer>().material = screenColors[0];
+			display.text = "";
+			if (colorFlash != null)
+				StopCoroutine(colorFlash);
+			StartCoroutine(ColorFlash(new RGBColor(000), true));
+			return;
+		}
 		submit = true;
 		display.text = "";
 		Audio.PlaySoundAtTransform("spark", transform);
@@ -375,8 +314,8 @@ public class OldFogey : MonoBehaviour
 		}
 		if (!isAllCorrect)
         {
-			Debug.LogFormat("[Old Fogey #{0}] Strike! Not all conditions were correct upon receiving these inputs: {1}.", moduleId, presses.Select(a => a + 1).Join());
-			GetComponent<KMBombModule>().HandleStrike();
+			Debug.LogFormat("[Old Fogey #{0}] Strike! Not all conditions were satisfied upon receiving these inputs: {1}.", moduleId, presses.Select(a => a + 1).Join());
+			modSelf.HandleStrike();
 			display.text = "";
 			screen.GetComponentInChildren<Renderer>().material = screenColors[0];
 			StartCoroutine(ColorFlash(new RGBColor(100), true));
@@ -390,10 +329,8 @@ public class OldFogey : MonoBehaviour
 			if(!presses.Exists(x => btnSounds[x] % 5 == i))
 				PlaySound(correctTape * 5 + i);
 
-		for(int i = 0; i < fakeStatusLight.transform.childCount; i++)
-			fakeStatusLight.transform.GetChild(i).gameObject.SetActive(false);
-		fakeStatusLight.transform.Find(new RGBColor(10).GetName()).gameObject.SetActive(true);
-		GetComponent<KMBombModule>().HandlePass();
+		fakeStatusLight.ShowColor("Green");
+		modSelf.HandlePass();
 	}
 
 	string GetButtonSymbol(int btn)
@@ -431,21 +368,18 @@ public class OldFogey : MonoBehaviour
 			givenSound.StopSound();
 	}
 
-	IEnumerator ColorFlash(RGBColor color, bool restore)
+	IEnumerator ColorFlash(RGBColor color, bool restore = false)
 	{
-		for(int i = 0; i < fakeStatusLight.transform.childCount; i++)
-			fakeStatusLight.transform.GetChild(i).gameObject.SetActive(false);
-
-		fakeStatusLight.transform.Find(color.GetName()).gameObject.SetActive(true);
+		fakeStatusLight.ShowColor(color.GetName());
 
 		yield return new WaitForSeconds(1f);
 
-		for(int i = 0; i < fakeStatusLight.transform.childCount; i++)
-			fakeStatusLight.transform.GetChild(i).gameObject.SetActive(false);
-		fakeStatusLight.transform.Find(startColor.GetName()).gameObject.SetActive(true);
-
-		if(restore)
+		if (restore)
+		{
+			currentColor = startColor.Clone();
 			submit = false;
+		}
+		fakeStatusLight.ShowColor(currentColor.GetName());
 	}
 
 	//Twitch Plays Handling
@@ -466,27 +400,33 @@ public class OldFogey : MonoBehaviour
 	IEnumerator TwitchHandleForcedSolve()
 	{
 		Debug.LogFormat("[Old Fogey #{0}] Force solve issued viva TP handler.", moduleId);
-		if (!submit)
+		if (submit && presses.Any())
 		{
 			submitBtn.OnInteract();
-			yield return new WaitForSeconds(0.05f);
+			yield return new WaitForSeconds(1.1f);
+			submitBtn.OnInteract();
+			yield return new WaitForSeconds(0.1f);
 		}
-		playSounds = false;
+		else if (!submit)
+		{
+			submitBtn.OnInteract();
+			yield return new WaitForSeconds(0.1f);
+		}
+		//playSounds = false;
 		for (int x = 0; x < autoSolvePresses.Length; x++)
 		{
 			btns[autoSolvePresses[x]].OnInteract();
 			//sound.StopSound();
-			yield return new WaitForSeconds(0.05f);
+			if (x + 1 < autoSolvePresses.Length)
+			yield return new WaitForSeconds(0.1f);
 		}
-		yield return true;
-
 	}
 
 	#pragma warning disable 414
-	private readonly string TwitchHelpMessage = "Press the following buttons with \"!{0} press 1\" Valid buttons for the press command are 1-10; 1 representing the ❖ button and its variants in reading order. Multiple buttons presses can be chained I.E \"!{0} press 1 2 3 4 5...\" Press the submit button with \"!{0} submit\" Reset inputs while submitting with \"!{0} reset\"";
+	private readonly string TwitchHelpMessage = "Press the following buttons with \"!{0} press 1\" Valid buttons for the press command are 1-10; 1 representing the ❖ button and its variants in reading order. Multiple buttons presses can be chained I.E \"!{0} press 1 2 3 4 5...\" Press the submit button with \"!{0} submit\" Reset inputs while submitting with \"!{0} reset\" Adjust the press delay on the module with \"!{0} pressdelay #.##\" from .25 of a second to 4 seconds per press. This does not apply when submitting.";
 #pragma warning restore 414
 
-	private float pressDelay = 1f;
+	private float pressDelay = .5f;
     IEnumerator ProcessTwitchCommand(string command)
     {
 		command = command.ToLower();
@@ -498,23 +438,19 @@ public class OldFogey : MonoBehaviour
 				yield break;
 			}
             yield return null;
-            Debug.LogFormat("[Old Fogey #{0}] Reset of inputs triggered! (TP)", moduleId);
-            presses.Clear();
-            submit = false;
-            display.text = "";
-            screen.GetComponentInChildren<Renderer>().material = screenColors[0];
-            if (colorFlash != null)
-                StopCoroutine(colorFlash);
-			StartCoroutine(ColorFlash(new RGBColor(000), true));
-
+			submitBtn.OnInteract();
 		}
 		else if (command.RegexMatch(@"^submit$"))
         {
-            yield return null;
+			if (submit)
+			{
+				yield return "sendtochaterror The module is already in submit mode. If you want to reset submission, do \"!{1} reset\" instead.";
+				yield break;
+			}
+			yield return null;
             submitBtn.OnInteract();
-
         }
-		else if (command.RegexMatch(@"^pressdelay\s\d+(.\d+)?$"))
+		else if (command.RegexMatch(@"^pressdelay\s\d*(.\d+)?$"))
 		{
 			if (submit)
 			{
@@ -522,7 +458,7 @@ public class OldFogey : MonoBehaviour
 				yield break;
 			}
             float handledPressDelay;
-            if (!float.TryParse(command.Substring(11), out handledPressDelay) || handledPressDelay < 0.75f || handledPressDelay > 4f)
+            if (!float.TryParse(command.Substring(10).Trim(), out handledPressDelay) || handledPressDelay < 0.25f || handledPressDelay > 4f)
             {
 				yield return string.Format("sendtochaterror I am unable to set the press delay for Old Fogey (#{0}) to \"{1}\" second(s).","{1}", command.Substring(11));
 				yield break;
@@ -556,7 +492,7 @@ public class OldFogey : MonoBehaviour
 				do
 				{
 					yield return string.Format("trycancel Your button interaction has been canceled after {0} press{1}.", x, x == 1 ? "" : "es");
-					yield return new WaitForSeconds(Time.deltaTime);
+					yield return null;
 					timeSpent += Time.deltaTime;
 				}
 				while (timeSpent < (submit ? 0.1f : pressDelay));

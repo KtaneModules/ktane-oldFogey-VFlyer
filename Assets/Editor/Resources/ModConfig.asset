@@ -16,13 +16,11 @@ MonoBehaviour:
   description: "\u201CThese kids today with their shiny mods and their newfangled
     needies. Twenty Comp Wires and twenty Knobs. Now that\u2019s real KTaNE.\u201D\n\r\n[b]This
     is a reupload of the original module by the original author. Please disable/unsubscribe
-    the old version [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1812956611&searchtext=old+fogey]here.[/url]
-    Some soundpacks may break this module entirely. Use certain soundpacks with this
-    module with caution.[/b] A long-term fix for this will be in the works.\n\nModule
+    the old version [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1812956611]here.[/url][/b]\n\nModule
     originally created by TheThirdMan\r\nReuploaded and maintained by VFlyer\nmoduleID:
     oldFogey\r\n\r\nGitHub (Latest): https://github.com/VFlyer/ktane-oldFogey\nGitHub
     (Old): https://github.com/luisdiogo98/ktane-oldFogey\n\r\nManual HTML: https://ktane.timwi.de/HTML/Old%20Fogey.html\r\nManual
     PDF: https://ktane.timwi.de/PDF/Old%20Fogey.pdf\r"
-  version: 1.5
+  version: 1.5.01
   outputFolder: build
   previewImage: {fileID: 2800000, guid: d51e1c2742f6554408f805540a2c76b2, type: 3}

@@ -1038,6 +1038,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4087571771050418}
+  - component: {fileID: 114222614733445172}
   m_Layer: 0
   m_Name: fakeStatusLight
   m_TagString: Untagged
@@ -6319,7 +6320,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -7564,6 +7565,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bomb: {fileID: 114382315774619326}
   Audio: {fileID: 114614747596665788}
+  modSelf: {fileID: 114682943674607128}
   btns:
   - {fileID: 114007476907370986}
   - {fileID: 114564327136408694}
@@ -7655,7 +7657,7 @@ MonoBehaviour:
   screenColors:
   - {fileID: 2100000, guid: 0f4d775a18b7cdd4298b951d91b23a4d, type: 2}
   - {fileID: 2100000, guid: 6a50f4e6159505d47986c25abf950477, type: 2}
-  fakeStatusLight: {fileID: 1600172232381724}
+  fakeStatusLight: {fileID: 114222614733445172}
   screen: {fileID: 1471849576240690}
   display: {fileID: 102419528062024896}
 --- !u!114 &114206483721036558
@@ -7693,6 +7695,26 @@ MonoBehaviour:
   AllowSelectionWrapY: 0
   ForceSelectionHighlight: 0
   ForceInteractionHighlight: 0
+--- !u!114 &114222614733445172
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1600172232381724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ef18ddfb3222364f81f507d9aca87c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  statusLightAlternatives:
+  - {fileID: 1029477130301488}
+  - {fileID: 1887364024811376}
+  - {fileID: 1419009314775284}
+  - {fileID: 1361566339760600}
+  - {fileID: 1200632281117602}
+  - {fileID: 1950123040083398}
+  - {fileID: 1528486921540368}
+  - {fileID: 1402644410386630}
 --- !u!114 &114226166291210790
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -1,5 +1,3 @@
-using System;
-
 class RGBColor
 {
     public bool r;
